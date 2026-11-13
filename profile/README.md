@@ -33,6 +33,10 @@ In unserem Holzhaus in München-Pasing begleiten wir Kinder von 15 Monaten bis z
 
 Willkommen im GitHub-Bereich unseres Vereins. Informationen zum pädagogischen Konzept, zur Anmeldung und zum Kinderhausalltag findet ihr auf unserer [Website](https://www.waldorfkinderhaus-pasing.de/).
 
+[Mitwirken](https://github.com/Waldorfkinderhaus-Pasing-eV/.github/blob/main/CONTRIBUTING.md) · [Rechte und Nutzung](https://github.com/Waldorfkinderhaus-Pasing-eV/.github/blob/main/LICENSE.md)
+
+<sub>Eigene Vereinsinhalte: alle Rechte vorbehalten. Open Source nur bei ausdrücklicher Lizenzierung.</sub>
+
 ## Besucht uns
 
 **Waldorfkinderhaus Pasing e. V.**<br>

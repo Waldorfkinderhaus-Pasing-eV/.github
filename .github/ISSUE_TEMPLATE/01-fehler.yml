@@ -1,0 +1,54 @@
+name: Fehler melden
+description: Etwas funktioniert nicht wie erwartet.
+title: "[Fehler] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke für deinen Hinweis! Bitte prüfe zuerst, ob das Problem bereits gemeldet wurde.
+        Diese Meldung ist öffentlich: keine personenbezogenen Daten, internen Unterlagen oder Zugangsdaten eintragen.
+        Vertrauliche Hinweise und Sicherheitsprobleme bitte über den [Kinderhaus-Kontakt](https://www.waldorfkinderhaus-pasing.de/kontakt/) abstimmen.
+  - type: input
+    id: ort
+    attributes:
+      label: Wo tritt der Fehler auf?
+      description: Öffentliche Seite, Datei oder betroffene Funktion; keine Links mit Zugangstokens angeben.
+      placeholder: Zum Beispiel die Anmeldung auf der Website oder eine Datei in diesem Repository.
+    validations:
+      required: true
+  - type: textarea
+    id: beobachtung
+    attributes:
+      label: Was passiert?
+      description: Beschreibe den beobachteten Fehler. Fehlermeldungen bitte anonymisieren.
+    validations:
+      required: true
+  - type: textarea
+    id: schritte
+    attributes:
+      label: Wie lässt sich der Fehler nachvollziehen?
+      placeholder: |
+        1. Seite oder Funktion öffnen
+        2. … auswählen
+        3. Fehler beobachten
+    validations:
+      required: true
+  - type: textarea
+    id: erwartung
+    attributes:
+      label: Was sollte stattdessen passieren?
+    validations:
+      required: true
+  - type: input
+    id: umgebung
+    attributes:
+      label: Gerät, Browser oder Programmversion
+      description: Falls bekannt und für das Problem relevant.
+      placeholder: Zum Beispiel iPhone mit Safari oder Windows mit Firefox.
+  - type: checkboxes
+    id: datenschutz
+    attributes:
+      label: Vor dem Absenden
+      options:
+        - label: Meine Meldung und Anhänge enthalten keine personenbezogenen oder vertraulichen Daten und keine Zugangsdaten.
+          required: true

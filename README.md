@@ -3,6 +3,20 @@
 Das öffentliche Organisationsprofil liegt in [profile/README.md](profile/README.md).
 Texte, Logo und Gartenaufnahme basieren auf der [Kinderhaus-Website](https://www.waldorfkinderhaus-pasing.de/).
 
+## Zusammenarbeit und Rechte
+
+- [Beitragsrichtlinien](CONTRIBUTING.md)
+- [Pull-Request-Vorlage](.github/PULL_REQUEST_TEMPLATE.md)
+- [Issue-Formulare](.github/ISSUE_TEMPLATE): Fehler, Inhaltskorrekturen und Verbesserungsvorschläge
+- [Rechte und Nutzung](LICENSE.md): Alle Rechte an eigenen Vereinsinhalten bleiben grundsätzlich dem Waldorfkinderhaus Pasing e. V. vorbehalten. Open Source gilt nur bei ausdrücklicher Lizenzierung.
+
+Die Richtlinien und Vorlagen stehen als Organisationsstandards für Repositories
+ohne eigene entsprechende Dateien bereit. Eigene Issue-Vorlagen oder eine eigene
+Issue-Konfiguration ersetzen den gesamten Standardordner für Issues.
+Lizenzdateien werden von GitHub **nicht** an andere Repositories vererbt;
+der Rechtehinweis muss dort jeweils gesondert hinterlegt werden.
+Siehe die [GitHub-Dokumentation zu Organisationsstandards](https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/creating-a-default-community-health-file).
+
 ## Veröffentlichung
 
 GitHub zeigt `profile/README.md` auf der Übersichtsseite der Organisation

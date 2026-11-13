@@ -1,0 +1,36 @@
+name: Verbesserung vorschlagen
+description: Eine Idee für die digitalen Projekte des Kinderhauses einbringen.
+title: "[Vorschlag] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Welche Änderung würde die digitalen Angebote des Kinderhauses verbessern?
+        Bitte suche zuerst nach ähnlichen Vorschlägen. Persönliche Anliegen zur Anmeldung oder zum Vereinsalltag gehören zum [Kinderhaus-Kontakt](https://www.waldorfkinderhaus-pasing.de/kontakt/).
+        Diese Meldung ist öffentlich; verwende ausschließlich unbedenkliche Beispieldaten.
+  - type: textarea
+    id: bedarf
+    attributes:
+      label: Welches Problem möchtest du lösen?
+      description: Beschreibe die Situation und wem eine Verbesserung helfen würde.
+    validations:
+      required: true
+  - type: textarea
+    id: idee
+    attributes:
+      label: Was schlägst du vor?
+      description: Beschreibe das gewünschte Ergebnis möglichst konkret.
+    validations:
+      required: true
+  - type: textarea
+    id: alternativen
+    attributes:
+      label: Alternativen oder ergänzende Hinweise
+      description: Optional; zum Beispiel eine einfachere Lösung oder ein öffentliches Beispiel.
+  - type: checkboxes
+    id: datenschutz
+    attributes:
+      label: Vor dem Absenden
+      options:
+        - label: Meine Meldung und Anhänge enthalten keine personenbezogenen oder vertraulichen Daten und keine Zugangsdaten.
+          required: true

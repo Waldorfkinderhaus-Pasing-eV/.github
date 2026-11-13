@@ -1,0 +1,38 @@
+name: Text oder Link korrigieren
+description: Einen veralteten Inhalt, Tippfehler oder falschen Link melden.
+title: "[Inhalt] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Hilf uns, die Informationen verständlich und aktuell zu halten.
+        Bitte keine internen Dokumente oder personenbezogenen Daten veröffentlichen.
+        Eigene Vereinsinhalte sind dem Verein vorbehalten; fremde Texte und Bilder benötigen passende Nutzungsrechte.
+  - type: input
+    id: ort
+    attributes:
+      label: Welche Seite oder Datei ist betroffen?
+      description: Nenne die öffentliche Adresse oder den Dateipfad und den Abschnitt.
+    validations:
+      required: true
+  - type: textarea
+    id: korrektur
+    attributes:
+      label: Was soll korrigiert werden?
+      description: Beschreibe den bisherigen Inhalt und deine vorgeschlagene Änderung.
+    validations:
+      required: true
+  - type: textarea
+    id: quelle
+    attributes:
+      label: Quelle oder Begründung
+      description: Verlinke nach Möglichkeit eine öffentliche Quelle. Interne Informationen bitte über den Kinderhaus-Kontakt abstimmen.
+    validations:
+      required: true
+  - type: checkboxes
+    id: datenschutz
+    attributes:
+      label: Vor dem Absenden
+      options:
+        - label: Meine Meldung und Anhänge enthalten keine personenbezogenen oder vertraulichen Daten und keine Zugangsdaten.
+          required: true
