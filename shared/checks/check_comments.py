@@ -29,11 +29,12 @@ YAML_HEADER_PARAMETERS = 0
 YAML_DOCUMENT_MARKER = '---'
 YAML_BLOCK_SCALAR = re.compile(r'(?:^|:\s|^-\s)\s*[|>][1-9+-]{0,2}$')
 YAML_TRAILING_COMMENT = re.compile(r'\s+#.*$')
+BOX_LINE = re.compile(r'^[\s#=*~_-]*$')
 TLA_LINE, TLA_OPEN, TLA_CLOSE = r'\*', '(*', '*)'
 TLA_PRAGMA = re.compile(r'^\s*@(?:type|typeAlias):')
 SHELL_DIRECTORIES = ('.githooks',)
 SHELL_SHEBANG = re.compile(r'^#!.*\b(?:sh|bash|dash|zsh)\b')
-PRAGMA = re.compile(r'^#\s*(?:-\*-|noqa|type:|pragma|shellcheck|region|endregion|yaml-language-server:|yamllint\b)'
+PRAGMA = re.compile(r'^#\s*(?:-\*-|noqa|type:|pragma|shellcheck|region|endregion|yaml-language-server:|yamllint\b|cloud-config$)'
                     r'|^//\s*(?:eslint|@ts-|prettier|#region)')
 HELP_KEYWORD = re.compile(r'^\s*\.(?P<word>[A-Z]+)\b(?P<rest>.*)$')
 TSDOC_PARAM = re.compile(r'^@param\b')
@@ -210,12 +211,20 @@ def check_yaml(rel, text):
                           if line.strip() and not line.strip().startswith('#')
                           and line.strip() != YAML_DOCUMENT_MARKER), len(lines) + 1)
     comments = list(yaml_comment_lines(lines))
-    header = [body for number, body in comments if number < first_content]
+    header = [body for number, body in comments if number < first_content and not BOX_LINE.match(body)]
     found = []
     if header:
         found += header_findings(rel, comments[0][0], header, YAML_HEADER_PARAMETERS)
-    later = [number for number, _ in comments if number >= first_content]
-    return found + comment_findings(rel, blocks_of(later))
+    runs = []
+    for number, body in comments:
+        if number < first_content:
+            continue
+        content = int(not BOX_LINE.match(body))
+        if runs and number == runs[-1][0] + runs[-1][1]:
+            runs[-1] = (runs[-1][0], runs[-1][1] + 1, runs[-1][2] + content)
+        else:
+            runs.append((number, 1, content))
+    return found + comment_findings(rel, [(start, size) for start, _, size in runs])
 
 
 def language(path, rel, text, shell_directories=SHELL_DIRECTORIES):

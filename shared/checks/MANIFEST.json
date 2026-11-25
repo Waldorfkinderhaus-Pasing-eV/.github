@@ -1,7 +1,7 @@
 {
   "files": {
     "baseline.py": "a954f253059bdd0cf9d6109aa9e0327d325b8a6e1c40ee667752380c1ddf577a",
-    "check_comments.py": "6b8fd949dc4f523917aba4cc04dea58e8ad0e1d736ab631a0dba4940afbed302",
+    "check_comments.py": "83ead911b6c1800cff01e61345007b6ad46254fe076c2159305014798ec5b119",
     "check_commits.py": "a61d31bee352258ae1a7e3add089aad6f91e4b4b6c942c5d83995068f0e87088",
     "check_decisions.py": "7e01e77917dca110880f3c672b1f42524d4115fb177751e7a4d61c5b097890d3",
     "check_drift.py": "fd46393ad6b50d453d82c35f9156bab7f0de2d7721db510d19c505c805c0c8af",
