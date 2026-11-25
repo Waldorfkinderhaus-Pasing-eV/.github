@@ -1,0 +1,36 @@
+#!/bin/sh
+# The full validation before every push, the merge gate (ADR-0022, D2), recorded per commit (ADR-0029).
+dir="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$dir" || exit 1
+# Git exports GIT_DIR to a hook in a linked worktree; a check that runs git elsewhere would act on
+# this repository. Validate without them.
+unset $(git rev-parse --local-env-vars)
+
+# The validation reads the working tree, so the working tree must be the commit that is pushed.
+head=$(git rev-parse --verify HEAD) || exit 1
+pushes_commits=''
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case $local_sha in *[!0]*) ;; *) continue ;; esac # all zeros: a deletion pushes no commit
+  pushes_commits=yes
+  pushed=$(git rev-parse --verify --quiet "$local_sha^{commit}") || pushed=$local_sha
+  if [ "$pushed" != "$head" ]; then
+    echo "pre-push: $local_ref is not the checked-out commit. Check it out and push it from there," >&2
+    echo 'so that the validation runs on what is pushed.' >&2
+    exit 1
+  fi
+done
+if [ -z "$pushes_commits" ]; then
+  echo 'pre-push: no commit is pushed (only deletions, or nothing); nothing to validate.'
+  exit 0
+fi
+if ! git diff --quiet HEAD -- || [ -n "$(git ls-files --others --exclude-standard)" ]; then
+  echo 'pre-push: the working tree differs from the commit that is pushed (changed or untracked files).' >&2
+  echo 'Commit or stash them and push again, so that the validation runs on what is pushed.' >&2
+  exit 1
+fi
+
+. "$dir/.githooks/find-python"
+find_python "$dir" || exit 1
+"$python" $python_flag scripts/validate.py </dev/null || exit 1
+record=$(git rev-parse --git-path "validated/$head")
+mkdir -p "$(dirname "$record")" && printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$(uname -s)" >"$record"

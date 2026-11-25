@@ -1,0 +1,6 @@
+#!/bin/sh
+# The commit check (ADR-0029): shared/checks/check_commits.py on the message being created.
+dir="$(cd "$(dirname "$0")/.." && pwd)"
+. "$dir/.githooks/find-python"
+find_python "$dir" || exit 1
+exec "$python" $python_flag "$dir/shared/checks/check_commits.py" --message-file "$1"

@@ -1,0 +1,8 @@
+#!/bin/sh
+# The fast checks before every commit: scripts/validate.py --fast (ADR-0022, ADR-0029, D2).
+# Enable once per clone: python shared/checks/install_hooks.py
+dir="$(cd "$(dirname "$0")/.." && pwd)"
+. "$dir/.githooks/find-python"
+find_python "$dir" || exit 1
+cd "$dir" || exit 1
+exec "$python" $python_flag scripts/validate.py --fast
