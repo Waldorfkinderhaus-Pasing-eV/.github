@@ -62,14 +62,18 @@ def check_pointer(rel, text):
 
 
 def check_repository(root):
+    """Findings for the files the check reads, without those `exclude` names (globs)."""
     settings = baseline.configuration(root, 'readme_agents')
+    exclude = settings.get('exclude', ())
     findings = []
     for rel, check in (('README.md', check_readme), ('AGENTS.md', check_agents)):
         path = Path(root) / rel
+        if baseline.excluded(rel, exclude):
+            continue
         findings += check(path.read_text(encoding='utf-8'), settings) if path.is_file() else [f'{rel}: missing']
     for rel in POINTERS:
         path = Path(root) / rel
-        if path.is_file():
+        if path.is_file() and not baseline.excluded(rel, exclude):
             findings += check_pointer(rel, path.read_text(encoding='utf-8'))
     return findings
 

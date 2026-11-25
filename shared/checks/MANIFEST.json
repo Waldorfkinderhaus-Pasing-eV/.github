@@ -1,13 +1,13 @@
 {
   "files": {
     "baseline.py": "a954f253059bdd0cf9d6109aa9e0327d325b8a6e1c40ee667752380c1ddf577a",
-    "check_comments.py": "d87e410e9fc9f5d838abb31548eb838e601404b8c39dfd41c566aefebe7cf6be",
+    "check_comments.py": "83ead911b6c1800cff01e61345007b6ad46254fe076c2159305014798ec5b119",
     "check_commits.py": "a61d31bee352258ae1a7e3add089aad6f91e4b4b6c942c5d83995068f0e87088",
     "check_decisions.py": "7e01e77917dca110880f3c672b1f42524d4115fb177751e7a4d61c5b097890d3",
     "check_drift.py": "fd46393ad6b50d453d82c35f9156bab7f0de2d7721db510d19c505c805c0c8af",
     "check_links.py": "12a02e5a18561edc255dd73e282fb90d1ffc332955ae8c39be2dfe4f99ae5e2e",
     "check_personal_data.py": "36a34b103347a5c8ec17ab85432f032c1fb764c0e57ac7d9a81b5ad5b45d3784",
-    "check_readme_agents.py": "95cf3cdb59048f66000e87aaf4d2e9741ce078e9e0da6887da2ca90c5555db88",
+    "check_readme_agents.py": "0bd9a2b4db698c351e9f843ef5e2bed470c81d85cdeaeb09a11e5a945d56dc3a",
     "install_hooks.py": "f6496ffd64bcc316ef6fa28eaa58a5a75f584128ff09b97f9977993919017d1f"
   }
 }

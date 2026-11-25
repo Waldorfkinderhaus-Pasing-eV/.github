@@ -23,11 +23,19 @@ SHELL = {'.sh', '.bash'}
 SLASH = {'.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'}
 POWERSHELL = {'.ps1', '.psm1'}
 TLA = {'.tla'}
+BICEP = {'.bicep', '.bicepparam'}
+YAML = {'.yml', '.yaml'}
+YAML_HEADER_PARAMETERS = 0
+YAML_DOCUMENT_MARKER = '---'
+YAML_BLOCK_SCALAR = re.compile(r'(?:^|:\s|^-\s)\s*[|>][1-9+-]{0,2}$')
+YAML_TRAILING_COMMENT = re.compile(r'\s+#.*$')
+BOX_LINE = re.compile(r'^[\s#=*~_-]*$')
 TLA_LINE, TLA_OPEN, TLA_CLOSE = r'\*', '(*', '*)'
 TLA_PRAGMA = re.compile(r'^\s*@(?:type|typeAlias):')
 SHELL_DIRECTORIES = ('.githooks',)
 SHELL_SHEBANG = re.compile(r'^#!.*\b(?:sh|bash|dash|zsh)\b')
-PRAGMA = re.compile(r'^#\s*(?:-\*-|noqa|type:|pragma|shellcheck|region|endregion)|^//\s*(?:eslint|@ts-|prettier|#region)')
+PRAGMA = re.compile(r'^#\s*(?:-\*-|noqa|type:|pragma|shellcheck|region|endregion|yaml-language-server:|yamllint\b|cloud-config$)'
+                    r'|^//\s*(?:eslint|@ts-|prettier|#region)')
 HELP_KEYWORD = re.compile(r'^\s*\.(?P<word>[A-Z]+)\b(?P<rest>.*)$')
 TSDOC_PARAM = re.compile(r'^@param\b')
 
@@ -118,7 +126,7 @@ def powershell_help(rel, start, lines):
     return header_findings(rel, start, content, parameters)
 
 
-def check_lines(rel, text, marker, block_open, block_close):
+def check_lines(rel, text, marker, block_open, block_close, headers=True):
     lines = text.splitlines()
     standalone, found, index = [], [], 0
     while index < len(lines):
@@ -134,17 +142,17 @@ def check_lines(rel, text, marker, block_open, block_close):
             raw[0] = raw[0].split(block_open, 1)[1].lstrip('*')
             raw[-1] = raw[-1].rsplit(block_close, 1)[0]
             body = [re.sub(r'^\s*\*?\s?', '', item) for item in raw]
-            found += block_findings(rel, start + 1, block_open, stripped, body)
+            found += block_findings(rel, start + 1, block_open, stripped, body, headers)
         elif stripped.startswith(marker) and not (index == 0 and stripped.startswith('#!')) and not PRAGMA.match(stripped):
             standalone.append(index + 1)
         index += 1
     return comment_findings(rel, blocks_of(standalone)) + found
 
 
-def block_findings(rel, start, block_open, first, body):
-    if block_open == '<#' and any(HELP_KEYWORD.match(item) for item in body):
+def block_findings(rel, start, block_open, first, body, headers=True):
+    if headers and block_open == '<#' and any(HELP_KEYWORD.match(item) for item in body):
         return powershell_help(rel, start, body)
-    if block_open == '/*' and first.startswith('/**'):
+    if headers and block_open == '/*' and first.startswith('/**'):
         parameters = sum(bool(TSDOC_PARAM.match(item.strip())) for item in body)
         return header_findings(rel, start, body, parameters)
     size = len([item for item in body if item.strip()])
@@ -183,6 +191,42 @@ def check_tla(rel, text):
     return comment_findings(rel, [(start, size) for start, _, size in runs])
 
 
+def yaml_comment_lines(lines):
+    """The standalone comment lines of a YAML file outside block scalars (`|`, `>`): number and text."""
+    scalar_indent = None
+    for number, line in enumerate(lines, start=1):
+        stripped = line.strip()
+        indent = len(line) - len(line.lstrip())
+        if scalar_indent is not None and (not stripped or indent > scalar_indent):
+            continue
+        scalar_indent = indent if YAML_BLOCK_SCALAR.search(YAML_TRAILING_COMMENT.sub('', stripped)) else None
+        if stripped.startswith('#') and not PRAGMA.match(stripped):
+            yield number, stripped[1:]
+
+
+def check_yaml(rel, text):
+    """The leading comment block is the file's documentation header; every later block is a comment."""
+    lines = text.splitlines()
+    first_content = next((number for number, line in enumerate(lines, start=1)
+                          if line.strip() and not line.strip().startswith('#')
+                          and line.strip() != YAML_DOCUMENT_MARKER), len(lines) + 1)
+    comments = list(yaml_comment_lines(lines))
+    header = [body for number, body in comments if number < first_content and not BOX_LINE.match(body)]
+    found = []
+    if header:
+        found += header_findings(rel, comments[0][0], header, YAML_HEADER_PARAMETERS)
+    runs = []
+    for number, body in comments:
+        if number < first_content:
+            continue
+        content = int(not BOX_LINE.match(body))
+        if runs and number == runs[-1][0] + runs[-1][1]:
+            runs[-1] = (runs[-1][0], runs[-1][1] + 1, runs[-1][2] + content)
+        else:
+            runs.append((number, 1, content))
+    return found + comment_findings(rel, [(start, size) for start, _, size in runs])
+
+
 def language(path, rel, text, shell_directories=SHELL_DIRECTORIES):
     suffix = path.suffix.lower()
     if suffix in PYTHON:
@@ -196,6 +240,10 @@ def language(path, rel, text, shell_directories=SHELL_DIRECTORIES):
         return 'slash'
     if suffix in TLA:
         return 'tla'
+    if suffix in BICEP:
+        return 'bicep'
+    if suffix in YAML:
+        return 'yaml'
     return None
 
 
@@ -212,6 +260,10 @@ def check_file(path, rel, shell_directories=SHELL_DIRECTORIES):
         return check_lines(rel, text, '//', '/*', '*/')
     if kind == 'tla':
         return check_tla(rel, text)
+    if kind == 'bicep':
+        return check_lines(rel, text, '//', '/*', '*/', headers=False)
+    if kind == 'yaml':
+        return check_yaml(rel, text)
     return []
 
 
