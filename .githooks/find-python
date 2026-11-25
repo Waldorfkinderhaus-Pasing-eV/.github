@@ -1,0 +1,17 @@
+# Sourced by pre-commit and pre-push: sets $python and $python_flag to the first Python 3.10 or newer.
+# Each candidate is run, not only looked up: Windows and macOS ship python3 stubs that only fail.
+minimum_major=3
+minimum_minor=10
+version_check="import sys; sys.exit(sys.version_info < ($minimum_major, $minimum_minor))"
+
+find_python() {
+  for candidate in 'py -3' python3 python; do
+    if command -v "${candidate%% *}" >/dev/null 2>&1 && $candidate -c "$version_check" >/dev/null 2>&1; then
+      python=${candidate%% *}
+      python_flag=${candidate#"$python"}
+      return 0
+    fi
+  done
+  echo "Python $minimum_major.$minimum_minor or newer was not found (tried py -3, python3, python). The hook did not run." >&2
+  return 1
+}

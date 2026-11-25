@@ -1,0 +1,67 @@
+name: Tag guard
+
+# The first job of every workflow of this repository (ADR-0022, item 3). GitHub's trigger on a
+# tag checks neither the signature nor that the commit is on main, so this job does, and every
+# other job needs it: a run on anything but a signed version tag on main, or by hand on main,
+# stops here.
+#
+# GitHub REST API, checked on docs.github.com on 18 November 2026:
+# - "Get a reference", GET /repos/{owner}/{repo}/git/ref/tags/{tag}: object.type and object.sha
+#   (https://docs.github.com/en/rest/git/refs#get-a-reference); an annotated tag has type "tag",
+#   a lightweight tag points at the commit and cannot carry a signature.
+# - "Get a tag", GET /repos/{owner}/{repo}/git/tags/{tag_sha}: object.type, object.sha and
+#   verification.verified, verification.reason ("valid", "unsigned", "unknown_key", ...)
+#   (https://docs.github.com/en/rest/git/tags#get-a-tag).
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    name: Signed version tag on main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # all branches: the tagged commit is compared with origin/main
+          persist-credentials: false
+      - name: Check the ref, the tag's signature and that its commit is on main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: sh
+        run: |
+          set -eu
+          version='^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'
+          fail() { echo "::error::$*"; exit 1; }
+          case "$GITHUB_REF" in
+            refs/heads/main)
+              [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] || fail "only a run by hand may start on main, not $GITHUB_EVENT_NAME"
+              commit=$GITHUB_SHA
+              echo "Run by hand on main at $commit." ;;
+            refs/tags/*)
+              tag=${GITHUB_REF#refs/tags/}
+              printf '%s\n' "$tag" | grep -Eq "$version" || fail "tag $tag is not a version tag v<major>.<minor>.<patch>"
+              ref=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" --jq '.object.type + " " + .object.sha') ||
+                fail "GitHub did not return the ref of tag $tag"
+              [ "${ref%% *}" = tag ] || fail "tag $tag is a lightweight tag; only a signed annotated tag starts a run"
+              tag_object=$(gh api "repos/$GITHUB_REPOSITORY/git/tags/${ref#* }" \
+                --jq '[.verification.verified, .verification.reason, .object.type, .object.sha] | map(tostring) | join(" ")') ||
+                fail "GitHub did not return the tag object of $tag"
+              read -r verified reason object_type commit <<EOF
+          $tag_object
+          EOF
+              [ -n "$commit" ] || fail "GitHub returned an incomplete tag object for $tag"
+              [ "$verified" = true ] || fail "the signature of tag $tag is not verified by GitHub (reason: $reason)"
+              [ "$object_type" = commit ] || fail "tag $tag points to a $object_type, not to a commit"
+              # GITHUB_SHA is the "tip commit pushed to the ref"; peeled in case it names the tag object.
+              [ "$commit" = "$(git rev-parse --verify --quiet "$GITHUB_SHA^{commit}")" ] || fail "tag $tag points to $commit, but the run is for $GITHUB_SHA"
+              echo "Tag $tag is signed (verified by GitHub: $reason) and points to $commit." ;;
+            *)
+              fail "runs start only on a version tag or by hand on main, not on $GITHUB_REF" ;;
+          esac
+          git rev-parse --verify --quiet refs/remotes/origin/main >/dev/null || fail 'origin/main was not fetched'
+          git merge-base --is-ancestor "$commit" refs/remotes/origin/main || fail "commit $commit is not on main"
+          echo "Commit $commit is on main."
