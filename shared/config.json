@@ -1,3 +1,4 @@
 {
-  "commits": {"repository": "Waldorfkinderhaus-Pasing-eV/.github"}
+  "commits": {"repository": "Waldorfkinderhaus-Pasing-eV/.github"},
+  "readme_agents": {"exclude": ["profile/README.md"]}
 }

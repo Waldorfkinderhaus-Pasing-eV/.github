@@ -1,17 +1,8 @@
+# Tag guard: the first job of every workflow; it stops a run not on a signed version tag on main or by hand on main.
+# ADR-0022, item 3; architecture shared/README.md, The tag run
+# https://docs.github.com/en/rest/git/refs#get-a-reference
+# https://docs.github.com/en/rest/git/tags#get-a-tag
 name: Tag guard
-
-# The first job of every workflow of this repository (ADR-0022, item 3). GitHub's trigger on a
-# tag checks neither the signature nor that the commit is on main, so this job does, and every
-# other job needs it: a run on anything but a signed version tag on main, or by hand on main,
-# stops here.
-#
-# GitHub REST API, checked on docs.github.com on 18 November 2026:
-# - "Get a reference", GET /repos/{owner}/{repo}/git/ref/tags/{tag}: object.type and object.sha
-#   (https://docs.github.com/en/rest/git/refs#get-a-reference); an annotated tag has type "tag",
-#   a lightweight tag points at the commit and cannot carry a signature.
-# - "Get a tag", GET /repos/{owner}/{repo}/git/tags/{tag_sha}: object.type, object.sha and
-#   verification.verified, verification.reason ("valid", "unsigned", "unknown_key", ...)
-#   (https://docs.github.com/en/rest/git/tags#get-a-tag).
 
 on:
   workflow_call:
